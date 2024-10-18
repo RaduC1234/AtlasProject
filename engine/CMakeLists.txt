@@ -1,24 +1,27 @@
-# Engine CMakeLists.txt
+cmake_minimum_required(VERSION 3.10)
+project(Engine)
 
-cmake_minimum_required(VERSION 3.10)  # Minimum required CMake version
-project(Engine)  # Set project name
+include(FetchContent)
+FetchContent_Declare(SFML
+        GIT_REPOSITORY https://github.com/SFML/SFML.git
+        GIT_TAG 2.6.x
+        GIT_SHALLOW ON
+        EXCLUDE_FROM_ALL
+        SYSTEM)
+FetchContent_MakeAvailable(SFML)
 
-# Create the static library for the engine
-file(GLOB_RECURSE ENGINE_SOURCES "src/*.cpp")
-file(GLOB_RECURSE ENGINE_HEADERS "src/*.hpp")
+file(GLOB_RECURSE ENGINE_SOURCES "src/*.cpp" "src/*.hpp")
 
-# Add spdlog as a subdirectory (ensure spdlog is cloned into the dependencies folder)
-add_subdirectory(dependencies/spdlog)
+add_subdirectory(dependencies/glm)
 
-# Create the engine static library
-add_library(engine STATIC ${ENGINE_SOURCES} ${ENGINE_HEADERS})
+add_library(engine OBJECT ${ENGINE_SOURCES})
 
-# Specify include directories for the engine library
-target_include_directories(engine
+target_include_directories(engine PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/src)
+
+target_link_libraries(engine
         PUBLIC
-        ${CMAKE_CURRENT_SOURCE_DIR}/src
-        dependencies/spdlog/include  # Include path for spdlog
+        glm
+        sfml-graphics
 )
 
-# Link spdlog to the engine library
-target_link_libraries(engine PRIVATE spdlog::spdlog)  # Link spdlog
+target_compile_definitions(engine PUBLIC ATLAS_ENABLE_ASSERT)

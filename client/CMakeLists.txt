@@ -1,20 +1,24 @@
-# Client CMakeLists.txt
+cmake_minimum_required(VERSION 3.28)
+project(Client)
 
-cmake_minimum_required(VERSION 3.10)  # Minimum required CMake version
-project(Client)  # Set project name
+option(BUILD_SHARED_LIBS "Build shared libraries" OFF)
 
-# Add the client executable
-file(GLOB_RECURSE CLIENT_SOURCES "src/*.cpp")
 
-file(GLOB_RECURSE CLIENT_HEADERS "src/*.hpp")
 
-add_executable(client ${CLIENT_SOURCES} ${CLIENT_HEADERS})
+# Add the server executable
+file(GLOB_RECURSE SERVER_SOURCES "src/*.cpp" "src/*.hpp")
 
-# Specify the engine dependency
-target_link_libraries(client PRIVATE engine)  # Link the engine static library
+add_executable(client ${SERVER_SOURCES})
+target_link_libraries(client PRIVATE engine)
 
-# Link spdlog to the client executable
-target_link_libraries(client PRIVATE spdlog::spdlog)  # Link spdlog
+target_include_directories(client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
-# Include directories
-target_include_directories(client PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/include)  # Adjust as necessary
+target_compile_features(client PRIVATE cxx_std_20)
+
+if(WIN32)
+    add_custom_command(
+            TARGET client
+            COMMENT "Copy OpenAL DLL"
+            PRE_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${SFML_SOURCE_DIR}/extlibs/bin/$<IF:$<EQUAL:${CMAKE_SIZEOF_VOID_P},8>,x64,x86>/openal32.dll $<TARGET_FILE_DIR:client>
+            VERBATIM)
+endif()

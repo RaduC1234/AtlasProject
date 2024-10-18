@@ -1,11 +1,18 @@
 cmake_minimum_required(VERSION 3.10)
-project(AtlasProject)
+project(Atlas)
 
-# Set the C++ standard
+# Set the C++ standard (optional)
 set(CMAKE_CXX_STANDARD 20)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-# Add subdirectories for engine, client, and server
+# Add the Engine
 add_subdirectory(engine)
+
+# Add the Client
 add_subdirectory(client)
+
+# Add the Server
 add_subdirectory(server)
+
+# Add the LevelBuilder
+add_subdirectory(level_builder)

@@ -1,38 +1,51 @@
 #pragma once
 
-#include "Core.hpp"
-#include "spdlog/spdlog.h"
-#include "spdlog/sinks/stdout_color_sinks.h"
-#include "spdlog/fmt/ostr.h"
+#include <iostream>
+#include <memory>
+#include <string>
+#include <format>
+#include <chrono>
+#include <iomanip>
+
+enum class LogLevel {
+    Trace,
+    Info,
+    Warn,
+    Error,
+    Fatal
+};
 
 class Log {
-
 private:
-    static std::shared_ptr<spdlog::logger> coreLogger;
-    //static std::shared_ptr<spdlog::logger> clientLogger;
+    static std::shared_ptr<Log> coreLogger;
+    LogLevel logLevel = LogLevel::Trace;
 
 public:
     static void init();
 
-    inline static std::shared_ptr<spdlog::logger> &getCoreLogger() { return coreLogger; }
+    static std::shared_ptr<Log> &getCoreLogger();
 
-    //inline static std::shared_ptr<spdlog::logger> &getClientLogger() { return clientLogger; }
+    void setLogLevel(LogLevel level);
 
+    void log(LogLevel level, const std::string &message);
+
+    template<typename... Args>
+    void log(LogLevel level, const std::string &formatString, Args &&... args) {
+        log(level, std::format(formatString, std::forward<Args>(args)...));
+    }
+
+private:
+    std::string getCurrentTime();
+
+    std::string getLogLevelString(LogLevel level);
+
+    void applyColor(LogLevel level);
+
+    void resetColor();
 };
 
-
-// core log macros
-#define AT_CORE_FATAL(...) {::Log::getCoreLogger()->error(__VA_ARGS__); exit(1); }
-#define AT_CORE_ERROR(...) ::Log::getCoreLogger()->error(__VA_ARGS__)
-#define AT_CORE_WARN(...)  ::Log::getCoreLogger()->warn(__VA_ARGS__)
-#define AT_CORE_INFO(...)  ::Log::getCoreLogger()->info(__VA_ARGS__)
-#define AT_CORE_TRACE(...) ::Log::getCoreLogger()->trace(__VA_ARGS__)
-
-/*
-// client log macros
-#define AV_FATAL(...) ::Log::getClientLogger()->fatal(__VA_ARGS__)
-#define AV_ERROR(...) ::Log::getClientLogger()->error(__VA_ARGS__)
-#define AV_WARN(...)  ::Log::getClientLogger()->warn(__VA_ARGS__)
-#define AV_INFO(...)  ::Log::getClientLogger()->info(__VA_ARGS__)
-#define AV_TRACE(...) ::Log::getClientLogger()->trace(__VA_ARGS__)
-*/
+#define AT_FATAL(...) { ::Log::getCoreLogger()->log(LogLevel::Fatal, __VA_ARGS__); }
+#define AT_ERROR(...) { ::Log::getCoreLogger()->log(LogLevel::Error, __VA_ARGS__); }
+#define AT_WARN(...)  { ::Log::getCoreLogger()->log(LogLevel::Warn, __VA_ARGS__); }
+#define AT_INFO(...)  { ::Log::getCoreLogger()->log(LogLevel::Info, __VA_ARGS__); }
+#define AT_TRACE(...) { ::Log::getCoreLogger()->log(LogLevel::Trace, __VA_ARGS__); }

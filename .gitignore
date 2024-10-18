@@ -4,6 +4,8 @@
 /obj/
 /out/
 
+.vs/
+
 # Ignore CMake generated files
 CMakeFiles/
 CMakeCache.txt
